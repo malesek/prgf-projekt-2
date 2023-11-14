@@ -57,7 +57,7 @@
       <workItem from="1699782151157" duration="1293000" />
       <workItem from="1699885717185" duration="1208000" />
       <workItem from="1699889184568" duration="5144000" />
-      <workItem from="1699984085941" duration="2037000" />
+      <workItem from="1699984085941" duration="2519000" />
     </task>
     <servers />
   </component>
@@ -65,15 +65,6 @@
     <option name="version" value="3" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/Application.java</url>
-          <line>200</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="rasterdata.RasterBufferedImage" memberName="img" />

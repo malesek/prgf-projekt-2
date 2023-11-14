@@ -25,6 +25,14 @@ public class Polygon {
     }
 
     /**
+     * Přídá námi zvolený bod na konec ArrayListu
+     * @param point
+     */
+    public void addAllPoints(ArrayList<Point> allPoints) {
+        this.points.addAll(allPoints);
+    }
+
+    /**
      * Přídá námi zvolený bod na námi zvolený index v ArrayListu
      * @param index
      * @param point
@@ -40,5 +48,4 @@ public class Polygon {
     public void removePoint(int index){
         this.points.remove(index);
     }
-
 }
