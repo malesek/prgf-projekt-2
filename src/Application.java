@@ -118,10 +118,12 @@ public class Application {
                     }
                 }
                 if(e.getButton() == MouseEvent.BUTTON2){
-                    point2 = findClosestPoint(polygon.getPoints(), e.getX(), e.getY());
-                    polygon.removePoint(index);
                     deletePoint = true;
-                    draw();
+                    if(polygon.getPoints().size() > 2){
+                        point2 = findClosestPoint(polygon.getPoints(), e.getX(), e.getY());
+                        polygon.removePoint(index);
+                        draw();
+                    }
                 }
                 if(e.getButton() == MouseEvent.BUTTON3){
                     if(point2 != null){
@@ -147,8 +149,10 @@ public class Application {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if(polygon.getPoints().size() != 0){
-                    point2 = new Point(e.getX(), e.getY());
-                    drawDrag();
+                    if(!deletePoint) {
+                        point2 = new Point(e.getX(), e.getY());
+                        drawDrag();
+                    }
                     panel.repaint();
                 }
             }
@@ -194,7 +198,7 @@ public class Application {
         if(index == -1 && !deletePoint){
             polygon.addPoint(new Point(point2.x, point2.y));
         }
-        if(index != -1) {
+        if(index != -1 && !deletePoint) {
             polygon.addPointAtIndex(index, new Point(point2.x, point2.y));
             index = -1;
         }
