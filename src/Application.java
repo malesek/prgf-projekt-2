@@ -2,6 +2,7 @@ import objectdata.Point;
 import objectdata.Polygon;
 import rasterdata.RasterBufferedImage;
 import rasterop.*;
+import rasterop.file.SeedFill;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -30,6 +31,7 @@ public class Application {
     private int index;
     private boolean deletePoint;
     SeedFill seedFill;
+    private Point mouseHoverPoint;
 
     /**
      * Inicializační metoda využívaná i pro uvedení všech proměnných do původního stavu
@@ -84,6 +86,10 @@ public class Application {
                     case KeyEvent.VK_C :
                         fullClear();
                         break;
+                    case KeyEvent.VK_K :
+                        seedFill.fill(raster, mouseHoverPoint.x, mouseHoverPoint.y, 0x00005f, raster.getPixel(mouseHoverPoint.x, mouseHoverPoint.y));
+                        panel.repaint();
+                        break;
                 }
             }
         });
@@ -136,7 +142,7 @@ public class Application {
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e);
+                mouseHoverPoint = new Point(e.getX(), e.getY());
             }
         });
 
@@ -174,15 +180,12 @@ public class Application {
         clear();
         if(index == -1 && !deletePoint){
             polygon.addPoint(new Point(point2.x, point2.y));
-            polygonRasterizer.drawPolygon(polygon);
-        } else if (deletePoint) {
-            polygonRasterizer.drawPolygon(polygon);
-
-        } else {
+        }
+        if(index != -1) {
             polygon.addPointAtIndex(index, new Point(point2.x, point2.y));
-            polygonRasterizer.drawPolygon(polygon);
             index = -1;
         }
+        polygonRasterizer.drawPolygon(polygon);
     }
     /**
      * Metoda pro kreslení tečkovaných čar při táhnutí myší

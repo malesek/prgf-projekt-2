@@ -50,6 +50,10 @@ public class RasterBufferedImage implements Raster {
         this.color = color;
     }
 
+    public int getClearColor() {
+        return this.color;
+    }
+
     @Override
     public int getWidth() {
         return img.getWidth();
