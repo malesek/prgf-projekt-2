@@ -47,7 +47,7 @@ public class PolygonCutter {
 
     // Kontrola zda C je uvnitř
     private boolean isInside(Point a, Point b, Point c) {
-        return (a.x - c.x) * (b.y - c.y) < (a.y - c.y) * (b.x - c.x);
+        return (a.x - c.x) * (b.y - c.y) <= (a.y - c.y) * (b.x - c.x);
     }
 
     // Najde průsečík úseček ab, cd

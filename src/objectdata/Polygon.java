@@ -25,8 +25,8 @@ public class Polygon {
     }
 
     /**
-     * Přídá námi zvolený bod na konec ArrayListu
-     * @param point
+     * Přidá arraylist bodů do našeho polygonu
+     * @param allPoints
      */
     public void addAllPoints(ArrayList<Point> allPoints) {
         this.points.addAll(allPoints);

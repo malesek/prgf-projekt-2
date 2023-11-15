@@ -1,5 +1,7 @@
+import objectdata.Elipse;
 import objectdata.Point;
 import objectdata.Polygon;
+import objectdata.Rectangle;
 import objectops.PolygonCutter;
 import rasterdata.RasterBufferedImage;
 import rasterop.*;
@@ -28,15 +30,21 @@ public class Application {
     private RasterBufferedImage raster;
     private DottedLineRasterizer dottedLineRasterizer;
     private PolygonRasterizer polygonRasterizer;
+    private RectangleRasterizer rectangleRasterizer;
+    private ElipseRasterizer elipseRasterizer;
     private PolygonCutter polygonCutter;
     private Point point2;
     private Polygon polygon;
     private Polygon cuttedPolygon;
+    private Rectangle rectangle;
+    private Elipse elipse;
     private int index;
     private boolean deletePoint;
     SeedFill seedFill;
     ScanLine scanLine;
     private Point mouseHoverPoint;
+
+    int drawMode = 0;
 
     /**
      * Inicializační metoda využívaná i pro uvedení všech proměnných do původního stavu
@@ -44,19 +52,27 @@ public class Application {
     public void initializer(){
         dottedLineRasterizer = new DottedLineRasterizer(raster);
         polygonRasterizer = new PolygonRasterizer(raster);
+        rectangleRasterizer = new RectangleRasterizer(raster);
+        elipseRasterizer = new ElipseRasterizer(raster);
         polygonCutter = new PolygonCutter();
         polygon = new Polygon();
+        rectangle = new Rectangle();
         point2 = null;
         index = -1;
         deletePoint = false;
         seedFill = new SeedFill();
         scanLine = new ScanLine(raster);
         cuttedPolygon = new Polygon();
-        cuttedPolygon.addPoint(new Point(200, 100));
-        cuttedPolygon.addPoint(new Point(200, 500));
-        cuttedPolygon.addPoint(new Point(500, 500));
-        cuttedPolygon.addPoint(new Point(500, 100));
-        polygonRasterizer.drawPolygon(cuttedPolygon);
+        elipse = new Elipse();
+
+        //Drawmode se zde neresetuje, protože bychom si jinak změnili mód, proto tu můžu mít tuto podmínku
+        if(drawMode == 0){
+            cuttedPolygon.addPoint(new Point(200, 100));
+            cuttedPolygon.addPoint(new Point(200, 500));
+            cuttedPolygon.addPoint(new Point(500, 500));
+            cuttedPolygon.addPoint(new Point(500, 100));
+            polygonRasterizer.drawPolygon(cuttedPolygon);
+        }
     }
     public Application(int width, int height) {
         //Inicializace okna
@@ -103,6 +119,14 @@ public class Application {
                         seedFill.fill(raster, mouseHoverPoint.x, mouseHoverPoint.y, 0x00005f, raster.getPixel(mouseHoverPoint.x, mouseHoverPoint.y));
                         panel.repaint();
                         break;
+                    case KeyEvent.VK_P :
+                        drawMode = 0;
+                        fullClear();
+                        break;
+                    case KeyEvent.VK_R:
+                        drawMode = 1;
+                        fullClear();
+                        break;
                 }
             }
         });
@@ -110,50 +134,67 @@ public class Application {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    raster.setPixel(e.getX(), e.getY(), 0xffff00);
-                    //ošetření aby se do polygonu přidal první bod pouze při prvním kliknutí
-                    if (polygon.getPoints().size() == 0) {
-                        polygon.addPoint(new Point(e.getX(), e.getY()));
+                if(drawMode == 0){
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        raster.setPixel(e.getX(), e.getY(), 0xffff00);
+                        //ošetření aby se do polygonu přidal první bod pouze při prvním kliknutí
+                        if (polygon.getPoints().size() == 0) {
+                            polygon.addPoint(new Point(e.getX(), e.getY()));
+                        }
                     }
-                }
-                if(e.getButton() == MouseEvent.BUTTON2){
-                    deletePoint = true;
-                    if(polygon.getPoints().size() > 2){
-                        point2 = findClosestPoint(polygon.getPoints(), e.getX(), e.getY());
-                        polygon.removePoint(index);
-                        draw();
+                    if(e.getButton() == MouseEvent.BUTTON2){
+                        deletePoint = true;
+                        if(polygon.getPoints().size() > 2){
+                            point2 = findClosestPoint(polygon.getPoints(), e.getX(), e.getY());
+                            polygon.removePoint(index);
+                            draw();
+                        }
                     }
-                }
-                if(e.getButton() == MouseEvent.BUTTON3){
-                    if(point2 != null){
-                        point2 = findClosestPoint(polygon.getPoints(), e.getX(), e.getY());
-                        polygon.removePoint(index);
+                    if(e.getButton() == MouseEvent.BUTTON3){
+                        if(point2 != null){
+                            point2 = findClosestPoint(polygon.getPoints(), e.getX(), e.getY());
+                            polygon.removePoint(index);
+                        }
                     }
+                } else if (drawMode == 1) {
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        raster.setPixel(e.getX(), e.getY(), 0xffff00);
+                        rectangle.p1 = new Point(e.getX(), e.getY());
+                    }
+                    if(e.getButton() == MouseEvent.BUTTON3){
+                        raster.setPixel(e.getX(), e.getY(), 0xffff00);
+                        rectangle.p2 = new Point(e.getX(), e.getY());
+                    }
+                    drawRectangle();
                 }
+
                 panel.repaint();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(!deletePoint){
-                    if(polygon.getPoints().size() != 0){
-                        draw();
-                        panel.repaint();
+                if(drawMode == 0){
+                    if(!deletePoint){
+                        if(polygon.getPoints().size() != 0){
+                            draw();
+                            panel.repaint();
+                        }
                     }
+                    else deletePoint = false;
                 }
-                else deletePoint = false;
             }
         });
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if(polygon.getPoints().size() != 0){
-                    if(!deletePoint) {
-                        point2 = new Point(e.getX(), e.getY());
-                        drawDrag();
+                if(drawMode == 0){
+                    if(polygon.getPoints().size() != 0){
+                        if(!deletePoint) {
+                            point2 = new Point(e.getX(), e.getY());
+                            drawDrag();
+                        }
+                        panel.repaint();
                     }
-                    panel.repaint();
                 }
             }
 
@@ -208,6 +249,15 @@ public class Application {
         polygonRasterizer.drawPolygon(cuttedPolygon);
         polygonRasterizer.drawPolygon(polygon);
     }
+
+    public void drawRectangle(){
+        clear();
+        if(rectangle.p1 != null && rectangle.p2 != null){
+            rectangleRasterizer.drawRectangle(rectangle);
+            elipse = new Elipse();
+            elipseRasterizer.drawElipse(elipse, rectangle);
+        }
+    }
     /**
      * Metoda pro kreslení tečkovaných čar při táhnutí myší
      */
@@ -235,8 +285,8 @@ public class Application {
      * Vyčístí raster a všechny proměnné (kromě drawMode abysme zůstali v kreslícím módu, ve kterém jsme byli)
      */
     public void fullClear(){
-        clear();
         initializer();
+        clear();
         panel.repaint();
     }
 
@@ -245,8 +295,18 @@ public class Application {
      */
     public void clear(){
         raster.clear();
-        raster.getGraphics().drawString("vyplnovani polygonu", 5, 15);
-        polygonRasterizer.drawPolygon(cuttedPolygon);
+        if(drawMode == 0){
+            raster.getGraphics().drawString("Mod orezavani polygonu", 5, 15);
+            raster.getGraphics().drawString("Pro prepnuti na mod obdelnika s elipsou stisknete R", 5, 25);
+            polygonRasterizer.drawPolygon(cuttedPolygon);
+        }
+        else{
+            raster.getGraphics().drawString("Mod vykresleni obdelnika s elipsou", 5, 15);
+            raster.getGraphics().drawString("1. bod je oznaceny cervenou barvou a zadate jej stiskem LMB", 5, 25);
+            raster.getGraphics().drawString("2. bod je oznaceny modrou barvou a zadate jej stiskem RMB", 5, 35);
+            raster.getGraphics().drawString("Pro prepnuti na mod orezavani polygonu stisknete P", 5, 45);
+        }
+
     }
 
     public void start() {
