@@ -17,6 +17,7 @@ public class ElipseRasterizer extends PolygonRasterizer{
             int x, y;
             x = (int) Math.round(middleX + rX * Math.cos(Math.toRadians(i)));
             y = (int) Math.round(middleY + rY * Math.sin(Math.toRadians(i)));
+            raster.setPixel(x,y,0xffff00);
             elipse.addPoint(new Point(x, y));
         }
         drawPolygon(elipse);

@@ -4,7 +4,7 @@ import objectdata.Point;
 import objectdata.Rectangle;
 import rasterdata.Raster;
 
-public class RectangleRasterizer extends FilledLineRasterizer{
+public class RectangleRasterizer extends PolygonRasterizer{
     public RectangleRasterizer(Raster raster) {
         super(raster);
     }
@@ -19,10 +19,7 @@ public class RectangleRasterizer extends FilledLineRasterizer{
         rectangle.addPoint(new Point(x2,y1));
         rectangle.addPoint(new Point(x2,y2));
         rectangle.addPoint(new Point(x1,y2));
-        rasterize(new Point(x1, y1), new Point(x2, y1), 0xffff00);
-        rasterize(new Point(x2, y1), new Point(x2, y2), 0xffff00);
-        rasterize(new Point(x2, y2), new Point(x1, y2), 0xffff00);
-        rasterize(new Point(x1, y2), new Point(x1, y1), 0xffff00);
+        drawPolygon(rectangle);
         drawPixelLocation(x1, y1, 0xff0000);
         drawPixelLocation(x2, y2, 0x0000ff);
     }
